@@ -45,14 +45,14 @@ main(int argc, char** argv)
   if (rootkh == 0) {
     printf(RED "error:" RESET WHITE " Running %s as root is not allowed as it "
                                     "can cause permanent, catastrophic damage "
-                                    "to your system.\n",
+                                    "to your system.\n" RESET,
            argv[0]);
     exit(EXIT_FAILURE);
   }
 
   if (argc < 2) {
     printf(RED "error:" RESET WHITE
-               " no operation specified (use -h for help)\n",
+               " no operation specified (use -h for help)\n" RESET,
            argv[0]);
     exit(EXIT_FAILURE);
   }
@@ -68,7 +68,7 @@ main(int argc, char** argv)
 
     if (argc < 3) {
       printf(RED "error:" RESET WHITE
-                 " No packages specified! Use %s -S <packages>!\n",
+                 " No packages specified! Use %s -S <packages>!\n" RESET,
              argv[0]);
       exit(EXIT_FAILURE);
     }
@@ -94,7 +94,7 @@ main(int argc, char** argv)
 
     if (argc < 3) {
       printf(RED "error:" RESET WHITE
-                 " No packages specified! Use %s -R <packages>!\n",
+                 " No packages specified! Use %s -R <packages>!\n" RESET,
              argv[0]);
       exit(EXIT_FAILURE);
     }
@@ -114,7 +114,7 @@ main(int argc, char** argv)
     free(names);
 
   } else {
-    printf(RED "error:" RESET WHITE " Command not found!\n");
+    printf(RED "error:" RESET WHITE " Command not found!\n" RESET);
   }
   return EXIT_SUCCESS;
 }
