@@ -5,6 +5,7 @@ operations:
     aur {-h}
     aur {-R}  <package(s)>
     aur {-S}  [package(s)]
+    aur {-Ss} [package(s)] [<target_folder>]
 
 Copyright (c) 2020, Iqbal Rifai
 All rights reserved.
