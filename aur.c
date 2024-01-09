@@ -1,5 +1,4 @@
 /*
-
    Copyright (c) 2020, Iqbal Rifai
    All rights reserved.
 
@@ -23,14 +22,13 @@
    LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
    OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
    DAMAGE.
-
- */
+*/
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <sys/types.h>
 #include <string.h>
 #include <unistd.h>
+#include <git2.h>
 
 #define RED "\033[1m\033[31m"
 #define WHITE "\033[1m\033[37m"
@@ -49,22 +47,46 @@ void printHelpMessage(const char* arg0) {
     printf("    %s {-h}\n", arg0);
     printf("    %s {-R}  <package(s)>\n", arg0);
     printf("    %s {-S}  [package(s)]\n", arg0);
+    printf("    %s {-Ss} [package(s)] [<target_folder>]\n", arg0);
 }
 
 void searchAndInstallPackages(int argc, char** argv) {
     if (argc < 3) {
-        printErrorMessage("No packages specified! Use %s -S <packages>!\n", argv[0]);
+        printErrorMessage("No packages specified! Use %s -S[ss] <packages> [<target_folder>]!\n", argv[0]);
+    }
+
+    git_libgit2_init();
+
+    const char* target_folder = "/tmp";
+
+    if (strlen(argv[1]) > 2 && argv[1][2] == 's') {
+        if (argc >= 4) {
+            target_folder = argv[3];
+        }
+    } else if (argc >= 3) {
+        target_folder = argv[2];
     }
 
     for (int i = 2; i < argc; i++) {
-        char* result = malloc(500);
-        printf(WHITE "Search Packages....\n");
-        sleep(5);
-        snprintf(result, 500, "cd /tmp && rm -rf %s && git clone https://aur.archlinux.org/%s.git && cd %s && makepkg -si",
-                 argv[i], argv[i], argv[i]);
-        system(result);
-        free(result);
+        char* repo_url = malloc(strlen("https://aur.archlinux.org/") + strlen(argv[i]) + strlen(".git") + 1);
+        sprintf(repo_url, "https://aur.archlinux.org/%s.git", argv[i]);
+
+        git_repository* repo;
+        int error = git_clone(&repo, repo_url, target_folder, NULL);
+        if (error != 0) {
+            printErrorMessage("Failed to clone repository %s\n", argv[i]);
+        }
+
+        chdir(target_folder);
+        chdir(argv[i]);
+
+        system("makepkg -si");
+
+        git_repository_free(repo);
+        free(repo_url);
     }
+
+    git_libgit2_shutdown();
 }
 
 void removePackages(int argc, char** argv) {
@@ -97,7 +119,7 @@ int main(int argc, char** argv) {
 
     if (strcmp(argv[1], "-h") == 0) {
         printHelpMessage(argv[0]);
-    } else if (strcmp(argv[1], "-S") == 0) {
+    } else if (strncmp(argv[1], "-S", 2) == 0) {
         searchAndInstallPackages(argc, argv);
     } else if (strcmp(argv[1], "-R") == 0) {
         removePackages(argc, argv);
